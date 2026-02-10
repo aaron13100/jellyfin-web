@@ -387,7 +387,7 @@ function getResolveFunction(resolve, commandId, changed, deleted, itemId) {
 }
 
 function executeCommand(item, id, options) {
-    const itemId = item.Id;
+    const itemId = options.collectionItemId || item.Id;
     const serverId = item.ServerId;
     const apiClient = ServerConnections.getApiClient(serverId);
     const api = toApi(apiClient);
