@@ -28,6 +28,7 @@ import { SeriesStatus } from '@jellyfin/sdk/lib/generated-client/models/series-s
 let currentContext;
 let metadataEditorInfo;
 let currentItem;
+let hasChanges;
 
 function isDialog() {
     return currentContext.classList.contains('dialog');
@@ -41,6 +42,7 @@ function closeDialog() {
 
 function submitUpdatedItem(form, item) {
     function afterContentTypeUpdated() {
+        hasChanges = true;
         toast(globalize.translate('MessageItemSaved'));
 
         loading.hide();
@@ -1072,7 +1074,7 @@ function centerFocus(elem, horiz, on) {
     });
 }
 
-function show(itemId, serverId, resolve) {
+function show(itemId, serverId, resolve, reject) {
     loading.show();
 
     const dialogOptions = {
@@ -1107,7 +1109,11 @@ function show(itemId, serverId, resolve) {
             centerFocus(dlg.querySelector('.formDialogContent'), false, false);
         }
 
-        resolve();
+        if (hasChanges) {
+            resolve();
+        } else {
+            reject();
+        }
     });
 
     currentContext = dlg;
@@ -1119,7 +1125,10 @@ function show(itemId, serverId, resolve) {
 
 export default {
     show: function (itemId, serverId) {
-        return new Promise(resolve => show(itemId, serverId, resolve));
+        return new Promise((resolve, reject) => {
+            hasChanges = false;
+            show(itemId, serverId, resolve, reject);
+        });
     },
 
     embed: function (elem, itemId, serverId) {
@@ -1142,4 +1151,3 @@ export default {
         });
     }
 };
-
